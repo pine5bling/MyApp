@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MyApp</string>
+    <string name="disconnect">Kết nối mạng không thành công </string>
+    <string name="connect">Kết nối mạng thành công </string>
+    <string name="wifi"> Mạng không dây</string>
+    <string name="ethernet"> Mạng có dây</string>
 </resources>
