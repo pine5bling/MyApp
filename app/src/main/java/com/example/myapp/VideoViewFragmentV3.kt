@@ -15,7 +15,7 @@ import com.example.myapp.databinding.MediaPlayerFragmentBinding
 import java.util.Calendar
 
 
-class VideoViewFragment : Fragment() {
+class VideoViewFragmentV3 : Fragment() {
     private lateinit var videoView: VideoView
     private var currentVideoIndex = 0
     private var mediaPlayer= MediaPlayer()

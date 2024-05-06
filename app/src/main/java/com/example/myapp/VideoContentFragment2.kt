@@ -17,7 +17,7 @@ import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import java.util.Calendar
 
-class VideoContentFragment : Fragment() {
+class VideoContentFragment2 : Fragment() {
     private lateinit var binding: VideoContentFragmentBinding
     private var player: ExoPlayer? = null
     private var playbackPosition = 0L
