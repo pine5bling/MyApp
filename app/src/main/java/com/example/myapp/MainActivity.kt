@@ -10,6 +10,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: MainActivityBinding
     private val videoContentFragment: Fragment = VideoContentFragment()
+//    private val mediaPlayerFragment: Fragment = MediaPlayerFragment()
+    private val videoViewFragment: Fragment = VideoViewFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,7 +19,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportFragmentManager.beginTransaction().apply {
-            replace(R.id.flContainer, videoContentFragment)
+            add(R.id.flContainer, videoViewFragment)
+//            hide(videoContentFragment)
             commit()
         }
     }

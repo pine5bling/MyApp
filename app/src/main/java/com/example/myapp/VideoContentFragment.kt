@@ -23,6 +23,8 @@ class VideoContentFragment : Fragment() {
 
     companion object {
         const val URI_STRING = "asset:///test_sound.mp4"
+        const val _URI_STRING =
+            "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     }
 
     override fun onCreateView(
@@ -76,7 +78,7 @@ class VideoContentFragment : Fragment() {
                 prepare()
                 seekTo(playbackPosition)
                 repeatMode = Player.REPEAT_MODE_ONE
-                play()
+//                play()
             }
         } else println("exoplayer is null")
     }
