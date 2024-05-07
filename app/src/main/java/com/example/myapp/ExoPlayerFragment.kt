@@ -1,37 +1,41 @@
 package com.example.myapp
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
-import com.example.myapp.databinding.VideoContentFragmentBinding
+import com.example.myapp.databinding.ExoPlayerFragmentBinding
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
-import java.util.Calendar
+import com.google.android.exoplayer2.ui.PlayerView
 
-class VideoContentFragment : Fragment() {
-    private lateinit var binding: VideoContentFragmentBinding
-    private var player: ExoPlayer? = null
+class ExoPlayerFragment : Fragment() {
+    private lateinit var playView : PlayerView
+    private var exoPlayer: ExoPlayer? = null
     private var playbackPosition = 0L
 
     companion object {
         const val URI_STRING = "asset:///test_sound.mp4"
-        const val _URI_STRING =
-            "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding = VideoContentFragmentBinding.inflate(inflater, container, false)
+        val binding = ExoPlayerFragmentBinding.inflate(inflater, container, false)
+        playView = binding.exoplayerView
         return binding.root
     }
 
@@ -48,7 +52,7 @@ class VideoContentFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.e("CHECK_LOG", "onViewCreated")
         preparePlayer()
-        binding.exoplayerView.player = player
+        playView.player = exoPlayer
     }
 
     override fun onDestroy() {
@@ -59,20 +63,21 @@ class VideoContentFragment : Fragment() {
 
     private fun initializePlayer(context: Context) {
         // setup buffer
-        val renderersFactory = DefaultRenderersFactory(requireContext())
-        val minBufferMs = 100
-        val maxBufferMs = 200
-        val bufferForPlaybackMs = 100
-        val bufferForPlaybackAfterRebufferMs = 50
-        val loadControl = DefaultLoadControl.Builder().setBufferDurationsMs(
-            minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs
-        ).setTargetBufferBytes(-1).setPrioritizeTimeOverSizeThresholds(true).build()
-        player = ExoPlayer.Builder(context, renderersFactory).setLoadControl(loadControl).build()
+//        val renderersFactory = DefaultRenderersFactory(requireContext())
+//        val minBufferMs = 100
+//        val maxBufferMs = 200
+//        val bufferForPlaybackMs = 100
+//        val bufferForPlaybackAfterRebufferMs = 50
+//        val loadControl = DefaultLoadControl.Builder().setBufferDurationsMs(
+//            minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs
+//        ).setTargetBufferBytes(-1).setPrioritizeTimeOverSizeThresholds(true).build()
+//        exoPlayer = ExoPlayer.Builder(context, renderersFactory).setLoadControl(loadControl).build()
+        exoPlayer = ExoPlayer.Builder(context).build()
     }
 
     private fun preparePlayer() {
-        if (player != null) {
-            with(player!!) {
+        if (exoPlayer != null) {
+            with(exoPlayer!!) {
                 val mediaItem: MediaItem = MediaItem.fromUri(Uri.parse(URI_STRING))
                 clearMediaItems()
                 setMediaItem(mediaItem)
@@ -84,8 +89,9 @@ class VideoContentFragment : Fragment() {
         } else println("exoplayer is null")
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun releasePlayer() {
-        player?.let { exoPlayer ->
+        exoPlayer?.let { exoPlayer ->
             playbackPosition = exoPlayer.currentPosition
             exoPlayer.apply {
                 stop()
@@ -93,29 +99,27 @@ class VideoContentFragment : Fragment() {
                 clearVideoSurface()
             }
         }
-        player = null
-        with(binding) {
-            exoplayerView.apply {
+        exoPlayer = null
+            playView.apply {
                 player?.release()
                 player = null
                 removeAllViews()
             }
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        player?.playWhenReady = true
+        exoPlayer?.playWhenReady = true
     }
 
     override fun onPause() {
         super.onPause()
-        player?.pause()
+        exoPlayer?.pause()
     }
 
     private fun setListener() {
 
-        player?.addListener(object : Player.Listener {
+        exoPlayer?.addListener(object : Player.Listener {
 
             override fun onPlayerError(error: PlaybackException) {
                 super.onPlayerError(error)
@@ -132,7 +136,7 @@ class VideoContentFragment : Fragment() {
             @Deprecated("Deprecated in Java")
             override fun onPositionDiscontinuity(reason: Int) {
                 Player.DISCONTINUITY_REASON_INTERNAL
-                if (player?.playWhenReady == true) player?.playWhenReady = true
+                if (exoPlayer?.playWhenReady == true) exoPlayer?.playWhenReady = true
             }
 
             @Deprecated("Deprecated in Java")
@@ -144,19 +148,17 @@ class VideoContentFragment : Fragment() {
 
                     Player.STATE_ENDED -> {
                         Log.e("CHECK_LOG", "STATE_ENDED")
-                        player?.playWhenReady = true
+                        exoPlayer?.playWhenReady = true
                     }
 
                     Player.STATE_IDLE -> {
                         Log.e("CHECK_LOG", "STATE_IDLE")
-                        player?.playWhenReady = true
+                        exoPlayer?.playWhenReady = true
                     }
 
                     Player.STATE_READY -> {
                         if (playWhenReady) {
                             Log.e("CHECK_LOG", "PlaybackStatus.PLAYING")
-//                            val current = Calendar.getInstance().timeInMillis
-//                            Log.d("CHECK_LOG", "time start play: $playTime")
                         } else {
                             Log.e("CHECK_LOG", "PlaybackStatus.PAUSED")
                         }

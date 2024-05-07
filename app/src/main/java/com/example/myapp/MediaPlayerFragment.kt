@@ -15,7 +15,7 @@ import com.example.myapp.databinding.MediaPlayerFragmentBinding
 import java.util.Calendar
 
 
-class VideoViewFragmentV3 : Fragment() {
+class MediaPlayerFragment : Fragment() {
     private lateinit var videoView: VideoView
     private var currentVideoIndex = 0
     private var mediaPlayer= MediaPlayer()
@@ -27,7 +27,6 @@ class VideoViewFragmentV3 : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        currentTime = Calendar.getInstance().timeInMillis
         val binding = MediaPlayerFragmentBinding.inflate(inflater, container, false)
         videoView = binding.videoView
         return binding.root
@@ -43,7 +42,7 @@ class VideoViewFragmentV3 : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.e("CHECK_LOG", "onViewCreated")
         setListener()
-        prepareMedia(currentVideoIndex)
+        prepareMedia()
     }
 
     override fun onResume() {
@@ -56,29 +55,12 @@ class VideoViewFragmentV3 : Fragment() {
         mediaPlayer.pause()
     }
 
-    private fun prepareMedia(index: Int) {
+    private fun prepareMedia() {
         val packageName = "com.example.myapp"
-//        videoView.setVideoURI(Uri.parse("android.resource://" + packageName + "/${R.raw.test_sound}"))
-//        videoView.start()
-        val mediaController = MediaController(requireContext())
+        videoView.setVideoURI(Uri.parse("android.resource://" + packageName + "/${R.raw.test_sound}"))
+        videoView.start()
+//        val mediaController = MediaController(requireContext())
 //        videoView.setMediaController(mediaController)
-        val videoList = mutableListOf(R.raw.test_sound, R.raw.test_sound_2)
-        if (index >= 0 && index < videoList.size) {
-            videoView.setVideoURI(Uri.parse("android.resource://" + packageName + "/${videoList[index]}"))
-            videoView.setOnPreparedListener { mediaPlayer ->
-                this.mediaPlayer = mediaPlayer
-                mediaPlayer.start()
-                videoView.setMediaController(mediaController)
-                mediaPlayer.setOnCompletionListener {
-                    // Phát video tiếp theo khi video hiện tại phát xong
-                    currentVideoIndex = (currentVideoIndex + 1) % videoList.size
-                    prepareMedia(currentVideoIndex)
-                }
-                mediaPlayer.isLooping = true
-            }
-        } else {
-            // Đã phát xong danh sách video
-        }
     }
 
     private fun setListener() {
