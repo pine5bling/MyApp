@@ -63,15 +63,15 @@ class ExoPlayerFragment : Fragment() {
 
     private fun initializePlayer(context: Context) {
         // setup buffer
-//        val renderersFactory = DefaultRenderersFactory(requireContext())
-//        val minBufferMs = 100
-//        val maxBufferMs = 200
-//        val bufferForPlaybackMs = 100
-//        val bufferForPlaybackAfterRebufferMs = 50
-//        val loadControl = DefaultLoadControl.Builder().setBufferDurationsMs(
-//            minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs
-//        ).setTargetBufferBytes(-1).setPrioritizeTimeOverSizeThresholds(true).build()
-//        exoPlayer = ExoPlayer.Builder(context, renderersFactory).setLoadControl(loadControl).build()
+        val renderersFactory = DefaultRenderersFactory(requireContext())
+        val minBufferMs = 100
+        val maxBufferMs = 200
+        val bufferForPlaybackMs = 100
+        val bufferForPlaybackAfterRebufferMs = 50
+        val loadControl = DefaultLoadControl.Builder().setBufferDurationsMs(
+            minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs
+        ).setTargetBufferBytes(-1).setPrioritizeTimeOverSizeThresholds(true).build()
+        exoPlayer = ExoPlayer.Builder(context, renderersFactory).setLoadControl(loadControl).build()
         exoPlayer = ExoPlayer.Builder(context).build()
     }
 

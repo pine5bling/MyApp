@@ -1,18 +1,23 @@
 package com.example.myapp
 
-import android.R.attr
-import android.app.Activity
 import android.content.Intent
-import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
-import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.myapp.databinding.MainActivityBinding
+import eu.bolt.screenshotty.Screenshot
+import eu.bolt.screenshotty.ScreenshotActionOrder
+import eu.bolt.screenshotty.ScreenshotBitmap
+import eu.bolt.screenshotty.ScreenshotManagerBuilder
+import eu.bolt.screenshotty.rx.asRxScreenshotManager
+import io.reactivex.disposables.Disposables
+import java.io.File
+import java.io.FileOutputStream
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -21,37 +26,41 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: MainActivityBinding
     private val exoPlayerFra: Fragment = ExoPlayerFragment()
     private val mediaPlayerFra: Fragment = MediaPlayerFragment()
-    private val REQUEST_SCREENSHOT = 127
-    private val REQ_PERMISSION = 2
-    private lateinit var mediaProjectionManager: MediaProjectionManager
-    private lateinit var windowManager: WindowManager
-    private val permissions = arrayOf(
-        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
 
     companion object {
-        var mediaProjection: MediaProjection? = null
+        private const val REQUEST_SCREENSHOT_PERMISSION = 1234
     }
+
+    private val screenshotManager by lazy {
+        ScreenshotManagerBuilder(this)
+            .withPermissionRequestCode(REQUEST_SCREENSHOT_PERMISSION)
+            .withCustomActionOrder(ScreenshotActionOrder.pixelCopyFirst())
+            .build()
+            .asRxScreenshotManager()
+    }
+
+    private var screenshotSubscription = Disposables.disposed()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        requestPermission()
 
         addFragment(R.id.flContainer1, mediaPlayerFra)
 
-        mediaProjectionManager =
-            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-
-        startActivityForResult(
-            mediaProjectionManager.createScreenCaptureIntent(),
-            REQUEST_SCREENSHOT
-        )
-
         binding.btnCapture.setOnClickListener {
-
+            makeScreenshot()
         }
+    }
+
+    private fun makeScreenshot() {
+        screenshotSubscription.dispose()
+        screenshotSubscription = screenshotManager
+            .makeScreenshot()
+            .subscribe(
+                ::handleScreenshot,
+                ::handleScreenshotError
+            )
     }
 
     private fun addFragment(containerViewId: Int, fragment: Fragment) {
@@ -61,39 +70,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
+    override fun onDestroy() {
+        super.onDestroy()
+        screenshotSubscription.dispose()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_SCREENSHOT) {
-            if (resultCode == RESULT_OK) {
-                val i = Intent(this, ScreenshotService::class.java)
-                    .putExtra(ScreenshotService.EXTRA_RESULT_CODE, resultCode)
-                    .putExtra(ScreenshotService.EXTRA_RESULT_INTENT, data)
-//                startForegroundService(i)
-            }
+        screenshotManager.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun handleScreenshot(screenshot: Screenshot) {
+        val bitmap = when (screenshot) {
+            is ScreenshotBitmap -> screenshot.bitmap
+        }
+        binding.ivPreview.setImageBitmap(bitmap)
+        saveScreenShot(bitmap)
+    }
+
+    private fun saveScreenShot(bitmap: Bitmap) {
+        val file = File(filesDir, "screenshot.png")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
     }
 
-    //    private fun requestPermission() {
-//        if (ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_DENIED) {
-//            return ActivityCompat.requestPermissions(this, permissions, REQ_PERMISSION)
-//        }
-//    }
-//
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        when (requestCode) {
-//            REQ_PERMISSION ->
-//                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    println("permission granted")
-//                } else {
-//                    println("permission not granted")
-//                }
-//        }
-//    }
-
+    private fun handleScreenshotError(t: Throwable) {
+        Log.e(javaClass.simpleName, t.message, t)
+        Toast.makeText(this, t.message, Toast.LENGTH_LONG).show()
+    }
 }

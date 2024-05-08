@@ -51,8 +51,11 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation("com.google.android.exoplayer:exoplayer:2.18.4")
+    implementation("eu.bolt:screenshotty:1.0.4")
+    implementation("eu.bolt:screenshotty-rx:1.0.4")
 
-
+    implementation("io.reactivex.rxjava2:rxjava:2.0.1")
+    implementation("io.reactivex.rxjava2:rxandroid:2.0.1")
 
 //    implementation("com.github.bumptech.glide:glide:4.16.0")
 

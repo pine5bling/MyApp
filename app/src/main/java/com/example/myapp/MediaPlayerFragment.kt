@@ -59,8 +59,6 @@ class MediaPlayerFragment : Fragment() {
         val packageName = "com.example.myapp"
         videoView.setVideoURI(Uri.parse("android.resource://" + packageName + "/${R.raw.test_sound}"))
         videoView.start()
-//        val mediaController = MediaController(requireContext())
-//        videoView.setMediaController(mediaController)
     }
 
     private fun setListener() {
